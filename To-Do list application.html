@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple To-Do List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: 24px;
+    }
+    #task-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    #task-list li {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .overdue {
+      color: red;
+    }
+    .completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .buttons {
+      display: inline-flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Simple To-Do List</h1>
+
+  <input type="text" id="task-input" placeholder="Enter a task" />
+  <input type="date" id="due-date-input" />
+  <button id="add-task-btn">Add Task</button>
+
+  <p id="error-msg" style="color: red; display: none;">Please enter a task and select a due date!</p>
+
+  <ul id="task-list"></ul>
+
+  <script>
+
+    const taskInput = document.getElementById('task-input');
+    const dueDateInput = document.getElementById('due-date-input');
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const taskList = document.getElementById('task-list');
+    const errorMsg = document.getElementById('error-msg');
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    function loadTasks() {
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        createTaskElement(task, index);
+      });
+    }
+
+    function createTaskElement(task, index) {
+      const li = document.createElement('li');
+
+      const taskDescription = document.createElement('span');
+      taskDescription.textContent = `${task.name} (Due: ${task.dueDate})`;
+
+      const today = new Date().toISOString().split('T')[0];
+      if (!task.completed && task.dueDate < today) {
+        taskDescription.classList.add('overdue');
+      }
+
+      if (task.completed) {
+        taskDescription.classList.add('completed');
+      }
+
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.classList.add('buttons');
+
+      const completeBtn = document.createElement('button');
+      completeBtn.textContent = 'Complete';
+      completeBtn.onclick = () => completeTask(index);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.onclick = () => deleteTask(index);
+
+      buttonsDiv.appendChild(completeBtn);
+      buttonsDiv.appendChild(deleteBtn);
+
+      li.appendChild(taskDescription);
+      li.appendChild(buttonsDiv);
+      taskList.appendChild(li);
+    }
+
+    addTaskBtn.onclick = function() {
+      const taskName = taskInput.value.trim();
+      const dueDate = dueDateInput.value;
+
+      if (!taskName || !dueDate) {
+        errorMsg.style.display = 'block';
+        return;
+      } else {
+        errorMsg.style.display = 'none';
+      }
+
+      const newTask = {
+        name: taskName,
+        dueDate: dueDate,
+        completed: false,
+      };
+
+      tasks.push(newTask);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+
+      taskInput.value = '';
+      dueDateInput.value = '';
+
+      loadTasks();
+    };
+
+    function completeTask(index) {
+      if (confirm('Are you sure you want to mark this task as complete?')) {
+        tasks[index].completed = true;
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        loadTasks();
+      }
+    }
+
+    function deleteTask(index) {
+      if (confirm('Are you sure you want to delete this task?')) {
+        tasks.splice(index, 1);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        loadTasks();
+      }
+    }
+
+    window.onload = loadTasks;
+  </script>
+
+</body>
+</html>

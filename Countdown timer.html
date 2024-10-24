@@ -1,0 +1,136 @@
+<html>
+  <head>
+    <title>Countdown counter</title>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+        text-align: center;
+        padding: 50px;
+      }
+  
+      .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: inline-block;
+      }
+  
+      h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #007BFF;
+      }
+  
+      #endtime, #countdown {
+        font-size: 18px;
+        margin-top: 10px;
+      }
+  
+      input, button {
+        font-size: 18px;
+        padding: 10px;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+  
+      button {
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+  
+      button:hover {
+        background-color: #0056b3;
+      }
+  
+      #countdown {
+        font-weight: bold;
+        color: #d9534f;
+      }
+    </style>
+  </head>
+  <body>
+     <div class="container">
+      <h1>Countdown Timer</h1>
+      <input type="datetime-local" id="datetime-picker">
+      <button id="start-btn">Start Timer</button>
+      <div id="endtime">Target date and time will be displayed here</div>
+      <div id="countdown">Time remaining will appear here</div>
+    </div>
+    
+    <script>
+         let countdown;
+    
+        window.onload = function() {
+          let savedTime = getCookie("targetTime"); 
+          if (savedTime) {
+            startCountdown(new Date(savedTime));
+          }
+        };
+  
+        document.getElementById('start-btn').onclick = function() {
+          let targetDateInput = document.getElementById('datetime-picker').value;
+          if (targetDateInput === "") { 
+            alert("Pick a valid date!");
+            return;
+          }
+    
+          let targetDate = new Date(targetDateInput);
+          let endtime = targetDate.getDate() + "/" + (targetDate.getMonth() + 1) + "/" + targetDate.getFullYear() +" " + targetDate.getHours() + ":" + targetDate.getMinutes();
+          document.getElementById("endtime").innerText = "Target date and time: " + endtime;
+          setCookie("targetTime", targetDate, 1);
+          startCountdown(targetDate);
+        };
+    
+        function startCountdown(targetDate) {
+          clearInterval(countdown);
+    
+          countdown = setInterval(function() {
+            let now = new Date().getTime();
+            let timeLeft = targetDate - now;
+            if (timeLeft <= 0) {
+              clearInterval(countdown);
+              document.getElementById('countdown').innerText = "Time's up!";
+              return;
+            }
+    
+            let days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    
+            document.getElementById('countdown').innerText = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+          }, 1000);
+        }
+    
+        function setCookie(name, value, days) {
+          let d = new Date();
+          d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+          let expires = "expires=" + d.toUTCString();
+          document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+    
+        function getCookie(name) {
+          let cname = name + "=";
+          let decodedCookie = decodeURIComponent(document.cookie); 
+          let ca = decodedCookie.split(';'); 
+          for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+              c = c.substring(1);
+            }
+            if (c.indexOf(cname) == 0) {
+              return c.substring(cname.length, c.length);
+            }
+          }
+          return "";
+        }
+    </script>
+  </body>
+</html>
